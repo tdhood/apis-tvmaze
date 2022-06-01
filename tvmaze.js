@@ -15,14 +15,13 @@ const MISSING_PIC_URL = "https://m.media-amazon.com/images/I/61WJ-qHBlEL._AC_SS4
  */
 
 async function getShowsByTerm($searchTerm) {
-  // ADD: Remove placeholder & make request to TVMaze search shows API.
   const response = await axios.get(TV_MAZE_SEARCH_API, {
     params: { q: $searchTerm },
   });
 
   const shows = response.data;
 
-  let showList = shows.map(show => ({
+  const showList = shows.map(show => ({
     id : show.show.id,
     name : show.show.name,
     summary : show.show.summary,
@@ -34,7 +33,6 @@ async function getShowsByTerm($searchTerm) {
 }
 
 /** Given list of shows, create markup for each and to DOM */
-//change alt tag
 function populateShows(shows) {
   $showsList.empty();
 
@@ -44,12 +42,12 @@ function populateShows(shows) {
          <div class="media">
            <img 
               src="${show.image}" 
-              alt="Bletchly Circle San Francisco" 
+              alt="${show.name}" 
               class="w-25 me-3">
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
              <div><small>${show.summary}</small></div>
-             <button class="btn btn-outline-light btn-sm Show-getEpisodes">
+             <button  class="btn btn-outline-light btn-sm Show-getEpisodes">
                Episodes
              </button>
            </div>
@@ -86,50 +84,42 @@ $searchForm.on("submit", async function (evt) {
 async function getEpisodesOfShow(id) {
   const response = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
   const episodes = response.data;
-  let formattedEpisodes = [];
-  for(let episode of episodes) {
-    const id = episode.id;
-    const name = episode.name;
-    const season = episode.season;
-    const number = episode.number;
-
-    formattedEpisodes.push({id, name, season, number});
-  }
+  const formattedEpisodes = episodes.map(episode => ({
+    id: episode.id,
+    name: episode.name,
+    season: episode.season,
+    number: episode.number
+  }));
 
   return formattedEpisodes;
 }
 
-/** Write a clear docstring for this function... */
+/** Takes in an array of episode objects, empties the episodesArea creates html for episodes,
+ *  and appends to the #episodesList
+ */
 
 function populateEpisodes(episodes) { 
-  $episodesArea.empty();
+  $("#episodesList").empty();
 
   for (let episode of episodes) {
     const $episode = $(
-      `<div data-episode-id="${episode.id}" class="Episode col-md-12 col-lg-6 mb-4">
-         <div class="media">
-           <img 
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg" 
-              alt="Bletchly Circle San Francisco" 
-              class="w-25 me-3">
-           <div class="media-body">
-             <h5 class="text-primary">${episode.name}</h5>
-             <div><small>${episode.summary}</small></div>
-             <button class="btn btn-outline-light btn-sm episode-getEpisodes">
-               Episodes
-             </button>
-           </div>
-         </div>  
-       </div>
-      `
+      `<li id="${episode.id}">Name: ${episode.name}, 
+      Season: ${episode.season}, Episode Number: ${episode.number}</>`
     );
-
+    console.log($episode);
     $("#episodesList").append($episode);
   }
 }
 
+$("#showsList").on("click", ".Show-getEpisodes", async function (evt) {
+  const showId = $(evt.target).closest(".Show").data("show-id");
+  const episodes = await getEpisodesOfShow(showId);
+  populateEpisodes(episodes);
+  $episodesArea.show();
+});
+
 $episodesArea.on("click", async function (evt) {
   evt.preventDefault();
-  const id = $showsList.id()
+  //const id = $showsList.id()
   await searchForShowAndDisplay();
 });
