@@ -21,7 +21,7 @@ async function getShowsByTerm($searchTerm) {
   const name = response.data.name;
   const summary = response.data.summary;
   const image =
-    response.data.image ||
+    response.data.image.medium ||
     "https://m.media-amazon.com/images/I/61WJ-qHBlEL._AC_SS450_.jpg";
 
   return [
@@ -44,7 +44,7 @@ function populateShows(shows) {
       `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img 
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg" 
+              src="${show.image}" 
               alt="Bletchly Circle San Francisco" 
               class="w-25 me-3">
            <div class="media-body">
@@ -102,4 +102,35 @@ async function getEpisodesOfShow(id) {
 
 /** Write a clear docstring for this function... */
 
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes) { 
+  $episodesArea.empty();
+
+  for (let episode of episodes) {
+    const $episode = $(
+      `<div data-episode-id="${episode.id}" class="Episode col-md-12 col-lg-6 mb-4">
+         <div class="media">
+           <img 
+              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg" 
+              alt="Bletchly Circle San Francisco" 
+              class="w-25 me-3">
+           <div class="media-body">
+             <h5 class="text-primary">${episode.name}</h5>
+             <div><small>${episode.summary}</small></div>
+             <button class="btn btn-outline-light btn-sm episode-getEpisodes">
+               Episodes
+             </button>
+           </div>
+         </div>  
+       </div>
+      `
+    );
+
+    $("#episodesList").append($episode);
+  }
+}
+
+$episodesArea.on("click", async function (evt) {
+  evt.preventDefault();
+  const id = $showsList.id()
+  await searchForShowAndDisplay();
+});
