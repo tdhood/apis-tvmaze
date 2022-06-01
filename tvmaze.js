@@ -3,6 +3,8 @@
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
+const TV_MAZE_SEARCH_API = "https://api.tvmaze.com/search/shows";
+const MISSING_PIC_URL = "https://m.media-amazon.com/images/I/61WJ-qHBlEL._AC_SS450_.jpg"
 
 
 /** Given a search term, search for tv shows that match that query.
@@ -14,30 +16,25 @@ const $searchForm = $("#searchForm");
 
 async function getShowsByTerm($searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  const response = await axios.get("https://api.tvmaze.com/search/shows", {
+  const response = await axios.get(TV_MAZE_SEARCH_API, {
     params: { q: $searchTerm },
   });
 
   const shows = response.data;
-  let showList = [];
-  
-  for(let show of shows) {
-    show = show.show;
 
-    const id = show.id;
-    const name = show.name;
-    const summary = show.summary;
-    const image = show.image ? show.image.medium :
-    "https://m.media-amazon.com/images/I/61WJ-qHBlEL._AC_SS450_.jpg";
-
-    showList.push({id, name, summary, image});
-  }
+  let showList = shows.map(show => ({
+    id : show.show.id,
+    name : show.show.name,
+    summary : show.show.summary,
+    image : (show.show.image ? show.show.image.medium : MISSING_PIC_URL
+    )
+  }));
 
   return showList;
 }
 
 /** Given list of shows, create markup for each and to DOM */
-
+//change alt tag
 function populateShows(shows) {
   $showsList.empty();
 
