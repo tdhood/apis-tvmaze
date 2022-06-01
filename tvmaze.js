@@ -14,24 +14,26 @@ const $searchForm = $("#searchForm");
 
 async function getShowsByTerm($searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  const response = await axios.get("https://api.tvmaze.com/singlesearch/shows", {
+  const response = await axios.get("https://api.tvmaze.com/search/shows", {
     params: { q: $searchTerm },
   });
-  const id = response.data.id;
-  const name = response.data.name;
-  const summary = response.data.summary;
-  const image =
-    response.data.image.medium ||
+
+  const shows = response.data;
+  let showList = [];
+  
+  for(let show of shows) {
+    show = show.show;
+
+    const id = show.id;
+    const name = show.name;
+    const summary = show.summary;
+    const image = show.image ? show.image.medium :
     "https://m.media-amazon.com/images/I/61WJ-qHBlEL._AC_SS450_.jpg";
 
-  return [
-    {
-      id: id,
-      name: name,
-      summary: summary,
-      image: image,
-    },
-  ];
+    showList.push({id, name, summary, image});
+  }
+
+  return showList;
 }
 
 /** Given list of shows, create markup for each and to DOM */
